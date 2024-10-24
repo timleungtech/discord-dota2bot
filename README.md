@@ -34,3 +34,5 @@ Create database:
         ├── name : {name}
         └── match_id : {match_id}
 ```
+
+![preview](https://raw.githubusercontent.com/timleungtech/discord-dota2bot/main/example.png)
