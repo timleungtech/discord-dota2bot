@@ -11,4 +11,5 @@ const ServerSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Server", ServerSchema);
+const Server = mongoose.model("Server", ServerSchema);
+export default Server;

@@ -4,6 +4,9 @@ import keepAlive from "./server.js";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDB from "./config/database.js";
+import Hero from "./model/Hero.js"
+import Player from "./model/Player.js"
+import Server from "./model/Server.js"
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -32,7 +35,7 @@ async function getMatch(matchId) {
 
 // Main function to initialize both MongoDB and Discord client
 async function init() {
-  keepAlive()
+  // keepAlive()
   dotenv.config({ path: "./config/config.env" })
   await connectDB(); // Connect to MongoDB
   client.login(process.env.DISCORD_TOKEN); // Log in to Discord
@@ -136,6 +139,51 @@ client.on('messageCreate', async (msg) => {
     msg.channel.send(`Now tracking user ${accountId}.`)
     console.log(`Now tracking user ${accountId}.`)
   }
+
+  if (msg.content === "$insertManyHeroes") {
+  async function insertManyDocuments(documents) {
+    try {
+      // Insert the documents
+      const result = await Hero.insertMany(documents);
+      console.log(`${result.length} documents inserted successfully:`, docs);
+    } catch (error) {
+      console.error('Error inserting documents:', error);
+    }
+  }
+
+  // Example usage
+  // const documentsToInsert = [
+  //     {
+  //         "id": 1,
+  //         "name": "npc_dota_hero_antimage",
+  //         "localized_name": "Anti-Mage",
+  //         "primary_attr": "agi",
+  //         "attack_type": "Melee",
+  //         "roles": [
+  //             "Carry",
+  //             "Escape",
+  //             "Nuker"
+  //         ],
+  //         "legs": 2
+  //     },
+  //     {
+  //         "id": 2,
+  //         "name": "npc_dota_hero_axe",
+  //         "localized_name": "Axe",
+  //         "primary_attr": "str",
+  //         "attack_type": "Melee",
+  //         "roles": [
+  //             "Initiator",
+  //             "Durable",
+  //             "Disabler",
+  //             "Carry"
+  //         ],
+  //         "legs": 2
+  //     }
+  // ];
+  // insertManyDocuments(documentsToInsert);
+  }
+
 });
 
 // Set channel_id for discord server
