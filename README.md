@@ -25,14 +25,17 @@ Create database:
 /dota2bot database
 └── discord servers
     └── document
-        ├── _server_id : {server_id}
-        ├── general : {channel_id}
-        └── dota2-notif : {channel_id}
+        ├── server_id : {server_id}
+        ├── channel_id : {channel_id}
 └── players
     └── document
         ├── account_id : {account_id}
         ├── name : {name}
         └── match_id : {match_id}
+└── heroes
+    └── document
+        ├── hero_id : {hero_id}
+        ├── localized_name : {localized_name}
 ```
 
 ![preview](https://raw.githubusercontent.com/timleungtech/discord-dota2bot/main/example.png)
