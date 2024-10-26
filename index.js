@@ -2,6 +2,8 @@ import Discord from "discord.js";
 import fetch from 'node-fetch';
 import keepAlive from "./server.js";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
+import connectDB from "./config/database.js";
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -26,6 +28,14 @@ async function getMatch(matchId) {
   const response = await fetch(`https://api.opendota.com/api/matches/${matchId}`);
   const data = await response.json();
   return data;
+}
+
+// Main function to initialize both MongoDB and Discord client
+async function init() {
+  keepAlive()
+  dotenv.config({ path: "./config/config.env" })
+  await connectDB(); // Connect to MongoDB
+  client.login(process.env.DISCORD_TOKEN); // Log in to Discord
 }
 
 async function refresh() {
@@ -128,14 +138,22 @@ client.on('messageCreate', async (msg) => {
   }
 });
 
+// Set channel_id for discord server
+// client.on('interactionCreate', async interaction => {
+//   if (!interaction.isChatInputCommand()) return;
+//   const guildId = interaction.guild.id;
+//   const storedChannelId = await database.getChannelIdForServer(guildId); // Fetch from database
+//   // Use storedChannelId to interact with the correct channel on the current server
+//   const channel = await interaction.guild.channels.fetch(storedChannelId);
+//   channel.send("Message sent to the configured channel"); 
+// });
+
 let storedMatch = 0;
-let accountId = '';
-let fetch_timer = 300000 // Wait 300 seconds (5 minutes)
+let accountId = 0;
+let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // OpenDota API max 2000 calls/day and 60/min (around 83 calls per hour)
 // currently, each iteration uses 3 calls, or 1 if no new recent match found
-// to check 1 person every 5 mins, max 18 calls per hour (assuming 3 games per hour max)
+// to check 1 person every 6 mins, max 16 calls per hour (assuming 3 games per hour max)
 
-keepAlive()
-dotenv.config()
-client.login(process.env.DISCORD_TOKEN)
-refresh_loop()
+init();
+refresh_loop();
