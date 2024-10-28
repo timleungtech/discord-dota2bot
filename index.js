@@ -121,21 +121,6 @@ async function refresh_loop() {
   });
 }
 
-async function insertPlayer(account_id, name) {
-  try {
-    const newDocument = new Player({
-      account_id: account_id,
-      name: name,
-      match_id: 0
-    });
-
-    const savedDocument = await newDocument.save();
-    console.log('Player added:', savedDocument);
-  } catch (err) {
-    console.error('Error inserting document:', err);
-  }
-}
-
 async function addPlayerToArray(player) {
   try {
     await Server.updateOne(
@@ -158,6 +143,44 @@ async function removePlayerFromArray() {
   }
 }
 
+async function insertPlayer(account_id, name) {
+  try {
+    const newDocument = new Player({
+      account_id: account_id,
+      name: name,
+      match_id: 0
+    });
+
+    const savedDocument = await newDocument.save();
+    console.log('Player added:', savedDocument);
+  } catch (err) {
+    console.error('Error inserting document:', err);
+  }
+}
+
+async function getPlayersFromDb(channelId) {
+  try {
+    const server = await Server.findOne({ channel_id: channelId });
+    if (server) {
+      console.log(server)
+      return server.players_tracking;
+    } else {
+      return []; // Return an empty array if no channel found
+    }
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error; // Optionally re-throw the error for further handling
+  }
+}
+
+async function find_player(playerName) {
+  try {
+    const player = await Player.findOne({ name: playerName });
+    return player;
+  } catch (error) {
+    console.error("Error finding player:", error);
+  }
+}
 
 
 // END OF FUNCTIONS
@@ -190,22 +213,6 @@ client.on('messageCreate', async (msg) => {
     msg.channel.send(`Added ${name} (${account_id}).`)
   }
 
-  async function find_player(playerName) {
-    try {
-      const player = await Player.findOne({ name: playerName });
-  
-      if (player) {
-        console.log("Player found:", player);
-        return player;
-      } else {
-        console.log("Player not found.");
-      }
-  
-    } catch (error) {
-      console.error("Error finding player:", error);
-    }
-  }
-
   if (msg.content.startsWith("$track")) {
     let typed_player = msg.content.split("$track ")[1]
     let found_player = await find_player(typed_player)
@@ -228,51 +235,6 @@ client.on('messageCreate', async (msg) => {
     if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
     else msg.channel.send('No players being tracked.')
   }
-
-  if (msg.content === "$insertManyHeroes") {
-  async function insertManyDocuments(documents) {
-    try {
-      // Insert the documents
-      const result = await Hero.insertMany(documents);
-      console.log(`${result.length} documents inserted successfully:`, docs);
-    } catch (error) {
-      console.error('Error inserting documents:', error);
-    }
-  }
-
-  // Example usage
-  // const documentsToInsert = [
-  //     {
-  //         "id": 1,
-  //         "name": "npc_dota_hero_antimage",
-  //         "localized_name": "Anti-Mage",
-  //         "primary_attr": "agi",
-  //         "attack_type": "Melee",
-  //         "roles": [
-  //             "Carry",
-  //             "Escape",
-  //             "Nuker"
-  //         ],
-  //         "legs": 2
-  //     },
-  //     {
-  //         "id": 2,
-  //         "name": "npc_dota_hero_axe",
-  //         "localized_name": "Axe",
-  //         "primary_attr": "str",
-  //         "attack_type": "Melee",
-  //         "roles": [
-  //             "Initiator",
-  //             "Durable",
-  //             "Disabler",
-  //             "Carry"
-  //         ],
-  //         "legs": 2
-  //     }
-  // ];
-  // insertManyDocuments(documentsToInsert);
-  }
-
 });
 
 // Set channel_id for discord server
@@ -285,20 +247,7 @@ client.on('messageCreate', async (msg) => {
 //   channel.send("Message sent to the configured channel"); 
 // });
 
-async function getPlayersFromDb(channelId) {
-  try {
-    const server = await Server.findOne({ channel_id: channelId });
-    if (server) {
-      console.log(server)
-      return server.players_tracking;
-    } else {
-      return []; // Return an empty array if no channel found
-    }
-  } catch (error) {
-    console.error('Error fetching players:', error);
-    throw error; // Optionally re-throw the error for further handling
-  }
-}
+
 
 let storedMatch = 0;
 let accountId = 0;
