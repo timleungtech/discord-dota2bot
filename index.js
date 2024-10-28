@@ -42,12 +42,14 @@ async function refresh(account_id) {
     const hero_id = lastMatch.hero_id;
 
     // Logging
+    let storedMatch = await getRecentMatchId(account_id)
+    
     const currentTimeET = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
     const glob_vars = ` Account: ${account_id} | Fetched match: ${matchId} | Stored match: ${storedMatch}`;
     console.log(currentTimeET, glob_vars);
 
     if (storedMatch == matchId) return; // End function, no new match found
-    storedMatch = matchId
+    await updateStoredMatch(account_id, matchId)
 
     const channel = client.channels.cache.get(process.env.CHANNEL_ID); // Replace with discord channel ID
     if (!channel) {
@@ -109,6 +111,7 @@ async function refresh_loop() {
     console.log(`Logged in as ${client.user.tag}`);
 
     while (true) {
+      account_ids = await getPlayersFromDb(process.env.CHANNEL_ID)
       for (let i = 0; i < account_ids.length; i++) {
         await refresh(account_ids[i]);
       }
@@ -158,7 +161,6 @@ async function getPlayersFromDb(channelId) {
   try {
     const server = await Server.findOne({ channel_id: channelId });
     if (server) {
-      console.log(server)
       return server.players_tracking;
     } else {
       return []; // Return an empty array if no channel found
@@ -185,6 +187,31 @@ async function getPlayersIdFromDb(names) {
     }
   }
   return ids
+}
+
+async function getRecentMatchId(id) {
+  try {
+    const player = await Player.findOne({ account_id: id });
+    if (player) {
+      return player.match_id;
+    } else {
+      return []; // Return an empty array if no channel found
+    }
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error; // Optionally re-throw the error for further handling
+  }
+}
+
+async function updateStoredMatch(account_id, matchId) {
+  try {
+    await Player.updateOne(
+      { account_id: account_id }, 
+      { $set: { match_id: matchId } }
+    );
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function find_player(playerName) {
@@ -269,10 +296,6 @@ client.on('messageCreate', async (msg) => {
 //   channel.send("Message sent to the configured channel"); 
 // });
 
-
-
-let storedMatch = 0;
-let accountId = 0;
 let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // OpenDota API max 2000 calls/day and 60/min (around 83 calls per hour)
 // currently, each iteration uses 3 calls, or 1 if no new recent match found
@@ -281,4 +304,5 @@ let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 init();
 let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
 let account_ids = await getPlayersIdFromDb(players_tracking)
+console.log(account_ids)
 refresh_loop();
