@@ -249,20 +249,12 @@ client.on('messageCreate', async (msg) => {
     refresh()
   }
 
-  if (msg.content.startsWith("$player")) {
-    let newAccountId = msg.content.split("$player ")[1]
-    accountId = newAccountId
-    msg.channel.send(`Now tracking user ${accountId}.`)
-  }
-
   if (msg.content.startsWith("$insert")) {
     let prompt = msg.content.split(" ")
     let account_id = prompt[2]
     let name = prompt[1]
 
     await insertPlayer(account_id, name);
-    
-    msg.channel.send(`Added ${name} (${account_id}).`)
   }
 
   if (msg.content.startsWith("$track")) {
@@ -274,8 +266,8 @@ client.on('messageCreate', async (msg) => {
     } else {
       msg.channel.send('Player not found.')
     }
-    // if more than 5 players, remove earliest
-    while (players_tracking.length > 5){
+    // if more than 'max_players_tracked' players, remove earliest
+    while (players_tracking.length > max_players_tracked){
       players_tracking.shift()
       removePlayerFromArray()
     }
@@ -299,6 +291,7 @@ client.on('messageCreate', async (msg) => {
 //   channel.send("Message sent to the configured channel"); 
 // });
 
+let max_players_tracked = 5
 let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // OpenDota API max 2000 calls/day and 60/min (around 83 calls per hour)
 // currently, each iteration uses 2 calls, or 1 if no new recent match found
