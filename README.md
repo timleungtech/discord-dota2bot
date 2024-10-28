@@ -4,38 +4,37 @@ Discord dota2bot checks OpenDota API for new recent matches of USERS every 'n' m
 ## Installation
 1. npm install
 2. create bot in discord developer portal
-3. grab app token and add to .env
+3. grab app token and add to config/config.env
 4. enable dev mode on discord to enable copy channel_id for interactions
-5. add channel_id to .env
-6. node index.js
+5. add channel_id to config/config.env
+6. create mongodb db, grab URI, and add to config/config.env
+7. node index.js
 
 ## Commands
-* $player <account_id>
-* $refresh
+* $list
+* $track <ref_name>
+* $insert <ref_name> <account_id>
 
 ## Room for improvement
-Create database:
-* saves data during server crashes
 * disallow commands affecting other servers with dota2bot
 * allow channel switching
-* allow tracking of more than one user
-* allow shortnames for users instead of account_id
 
 ```
 /dota2bot database
-└── discord servers
+└── servers
     └── document
-        ├── server_id : {server_id}
-        ├── channel_id : {channel_id}
+        ├── server_id : 'server_id'
+        ├── channel_id : 'channel_id'
+        ├── players_tracking : []
 └── players
     └── document
-        ├── account_id : {account_id}
-        ├── name : {name}
-        └── match_id : {match_id}
+        ├── account_id : account_id
+        ├── name : 'name'
+        └── match_id : match_id
 └── heroes
     └── document
-        ├── hero_id : {hero_id}
-        ├── localized_name : {localized_name}
+        ├── hero_id : hero_id
+        ├── localized_name : 'localized_name'
 ```
 
 ![preview](https://raw.githubusercontent.com/timleungtech/discord-dota2bot/main/example.png)
