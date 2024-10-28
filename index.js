@@ -15,8 +15,8 @@ function formatTime(seconds) {
   return formattedTime;
 }
 
-async function getLastMatch() {
-  const response = await fetch(`https://api.opendota.com/api/players/${accountId}/matches?limit=1`);
+async function getLastMatch(id) {
+  const response = await fetch(`https://api.opendota.com/api/players/${id}/matches?limit=1`);
   const data = await response.json();
   return data[0];
 }
@@ -35,15 +35,15 @@ async function init() {
   client.login(process.env.DISCORD_TOKEN); // Log in to Discord
 }
 
-async function refresh() {
+async function refresh(account_id) {
   try {
-    const lastMatch = await getLastMatch(); // Fetch last match details once
+    const lastMatch = await getLastMatch(account_id); // Fetch last match details once
     const matchId = lastMatch.match_id;
     const hero_id = lastMatch.hero_id;
 
     // Logging
     const currentTimeET = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
-    const glob_vars = ` Account: ${accountId} | Fetched match: ${matchId} | Stored match: ${storedMatch}`;
+    const glob_vars = ` Account: ${account_id} | Fetched match: ${matchId} | Stored match: ${storedMatch}`;
     console.log(currentTimeET, glob_vars);
 
     if (storedMatch == matchId) return; // End function, no new match found
@@ -60,7 +60,7 @@ async function refresh() {
 
     const match = await getMatch(matchId)
 
-    const playerData = match.players.find(player => player.account_id == accountId);
+    const playerData = match.players.find(player => player.account_id == account_id);
 
     const {
       personaname,
@@ -109,7 +109,9 @@ async function refresh_loop() {
     console.log(`Logged in as ${client.user.tag}`);
 
     while (true) {
-      await refresh();
+      for (let i = 0; i < account_ids.length; i++) {
+        await refresh(account_ids[i]);
+      }
       await new Promise(resolve => setTimeout(resolve, fetch_timer)); 
     }
   });
@@ -249,10 +251,6 @@ client.on('messageCreate', async (msg) => {
     }
     if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
     else msg.channel.send('No players being tracked.')
-  }
-
-  if (msg.content === "$id") {
-    console.log(account_ids)
   }
 
   if (msg.content === "$list") {
