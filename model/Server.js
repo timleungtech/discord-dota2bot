@@ -4,10 +4,12 @@ const ServerSchema = new mongoose.Schema({
   server_id: {
     type: String,
     required: true,
+    unique: true,
   },
   channel_id: {
     type: String,
     required: true,
+    unique: true,
   },
   players_tracking: {
     type: Array,

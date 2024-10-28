@@ -49,6 +49,7 @@ async function refresh(account_id) {
     console.log(currentTimeET, glob_vars);
 
     if (storedMatch == matchId) return; // End function, no new match found
+
     await updateStoredMatch(account_id, matchId)
 
     const channel = client.channels.cache.get(process.env.CHANNEL_ID); // Replace with discord channel ID
@@ -300,11 +301,8 @@ client.on('messageCreate', async (msg) => {
 
 let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // OpenDota API max 2000 calls/day and 60/min (around 83 calls per hour)
-// currently, each iteration uses 3 calls, or 1 if no new recent match found
-// to check 1 person every 6 mins, max 16 calls per hour (assuming 3 games per hour max)
+// currently, each iteration uses 2 calls, or 1 if no new recent match found
+// to check 1 person every 6 mins, max 13 calls per hour (assuming 3 games per hour max)
 
 init();
-// let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
-// let account_ids = await getPlayersIdFromDb(players_tracking)
-// console.log(`players_tracking: ${account_ids}`)
 refresh_loop();
