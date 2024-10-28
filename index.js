@@ -167,6 +167,24 @@ async function getPlayersFromDb(channelId) {
   }
 }
 
+async function getPlayersIdFromDb(names) {
+  let ids = []
+  for (let i = 0; i < names.length; i++){
+    try {
+      const player = await Player.findOne({ name: names[i] });
+      if (player) {
+        ids.push(player.account_id);
+      } else {
+        return []; // Return an empty array if no channel found
+      }
+    } catch (error) {
+      console.error('Error fetching player ids:', error);
+      throw error; // Optionally re-throw the error for further handling
+    }
+  }
+  return ids
+}
+
 async function find_player(playerName) {
   try {
     const player = await Player.findOne({ name: playerName });
@@ -233,6 +251,10 @@ client.on('messageCreate', async (msg) => {
     else msg.channel.send('No players being tracked.')
   }
 
+  if (msg.content === "$id") {
+    console.log(account_ids)
+  }
+
   if (msg.content === "$list") {
     if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
     else msg.channel.send('No players being tracked.')
@@ -260,4 +282,5 @@ let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 
 init();
 let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
+let account_ids = await getPlayersIdFromDb(players_tracking)
 refresh_loop();
