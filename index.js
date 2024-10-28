@@ -121,6 +121,47 @@ async function refresh_loop() {
   });
 }
 
+async function insertPlayer(account_id, name) {
+  try {
+    const newDocument = new Player({
+      account_id: account_id,
+      name: name,
+      match_id: 0
+    });
+
+    const savedDocument = await newDocument.save();
+    console.log('Player added:', savedDocument);
+  } catch (err) {
+    console.error('Error inserting document:', err);
+  }
+}
+
+async function addPlayerToArray(player) {
+  try {
+    await Server.updateOne(
+      { channel_id: process.env.CHANNEL_ID }, 
+      { $push: { players_tracking: player } }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function removePlayerFromArray() {
+  try {
+    await Server.updateOne(
+      { channel_id: process.env.CHANNEL_ID }, 
+      { $pop: { players_tracking: -1 } }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+
+// END OF FUNCTIONS
+
 const client = new Discord.Client({ intents: [
   Discord.GatewayIntentBits.Guilds, 
   Discord.GatewayIntentBits.MessageContent, 
@@ -137,7 +178,55 @@ client.on('messageCreate', async (msg) => {
     let newAccountId = msg.content.split("$player ")[1]
     accountId = newAccountId
     msg.channel.send(`Now tracking user ${accountId}.`)
-    console.log(`Now tracking user ${accountId}.`)
+  }
+
+  if (msg.content.startsWith("$insert")) {
+    let prompt = msg.content.split(" ")
+    let account_id = prompt[2]
+    let name = prompt[1]
+
+    await insertPlayer(account_id, name);
+    
+    msg.channel.send(`Added ${name} (${account_id}).`)
+  }
+
+  async function find_player(playerName) {
+    try {
+      const player = await Player.findOne({ name: playerName });
+  
+      if (player) {
+        console.log("Player found:", player);
+        return player;
+      } else {
+        console.log("Player not found.");
+      }
+  
+    } catch (error) {
+      console.error("Error finding player:", error);
+    }
+  }
+
+  if (msg.content.startsWith("$track")) {
+    let typed_player = msg.content.split("$track ")[1]
+    let found_player = await find_player(typed_player)
+    if (found_player){ // && channel_id === channel_id)
+      players_tracking.push(found_player.name)
+      await addPlayerToArray(found_player.name)
+    } else {
+      msg.channel.send('Player not found.')
+    }
+    // if more than 5 players, remove earliest
+    while (players_tracking.length > 5){
+      players_tracking.shift()
+      removePlayerFromArray()
+    }
+    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
+    else msg.channel.send('No players being tracked.')
+  }
+
+  if (msg.content === "$list") {
+    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
+    else msg.channel.send('No players being tracked.')
   }
 
   if (msg.content === "$insertManyHeroes") {
@@ -196,6 +285,21 @@ client.on('messageCreate', async (msg) => {
 //   channel.send("Message sent to the configured channel"); 
 // });
 
+async function getPlayersFromDb(channelId) {
+  try {
+    const server = await Server.findOne({ channel_id: channelId });
+    if (server) {
+      console.log(server)
+      return server.players_tracking;
+    } else {
+      return []; // Return an empty array if no channel found
+    }
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error; // Optionally re-throw the error for further handling
+  }
+}
+
 let storedMatch = 0;
 let accountId = 0;
 let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
@@ -204,4 +308,5 @@ let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // to check 1 person every 6 mins, max 16 calls per hour (assuming 3 games per hour max)
 
 init();
+let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
 refresh_loop();
