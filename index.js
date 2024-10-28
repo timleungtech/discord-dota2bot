@@ -174,6 +174,16 @@ async function getPlayersFromDb(channelId) {
   }
 }
 
+async function listPlayerNamesInDb() {
+  try {
+    const players = await Player.find({}, 'name'); // Fetch only the 'name' field
+    const playerNames = players.map(player => player.name).sort(); // Extract names into an array
+    return playerNames;
+  } catch (error) {
+    console.error('Error fetching player names:', error);
+  }
+}
+
 async function getPlayersIdFromDb(names) {
   let ids = []
   for (let i = 0; i < names.length; i++){
@@ -245,10 +255,6 @@ const client = new Discord.Client({ intents: [
 client.on('messageCreate', async (msg) => {
   if (msg.author.bot) return; // Ignore bot messages
 
-  if (msg.content === "$refresh") {
-    refresh()
-  }
-
   if (msg.content.startsWith("$insert")) {
     let prompt = msg.content.split(" ")
     let account_id = prompt[2]
@@ -276,7 +282,11 @@ client.on('messageCreate', async (msg) => {
   }
 
   if (msg.content === "$list") {
-    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
+    if (players_tracking.length > 0) {
+      let allPlayers = await listPlayerNamesInDb()
+      msg.channel.send(`Available players: ${allPlayers}`)
+      msg.channel.send(`Now tracking (max ${max_players_tracked}): ${players_tracking}`)
+    }
     else msg.channel.send('No players being tracked.')
   }
 });
@@ -292,10 +302,12 @@ client.on('messageCreate', async (msg) => {
 // });
 
 let max_players_tracked = 5
-let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
+let fetch_timer = 300000; // Wait 300 seconds (5 minutes)
 // OpenDota API max 2000 calls/day and 60/min (around 83 calls per hour)
 // currently, each iteration uses 2 calls, or 1 if no new recent match found
-// to check 1 person every 6 mins, max 13 calls per hour (assuming 3 games per hour max)
+// to check 1 person every 5 mins, max 15 calls per hour (assuming 3 games per hour max)
 
 init();
+let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
+// let account_ids = await getPlayersIdFromDb(players_tracking)
 refresh_loop();
