@@ -111,7 +111,9 @@ async function refresh_loop() {
     console.log(`Logged in as ${client.user.tag}`);
 
     while (true) {
-      account_ids = await getPlayersFromDb(process.env.CHANNEL_ID)
+      let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
+      let account_ids = await getPlayersIdFromDb(players_tracking)
+
       for (let i = 0; i < account_ids.length; i++) {
         await refresh(account_ids[i]);
       }
@@ -302,7 +304,7 @@ let fetch_timer = 360000; // Wait 360 seconds (6 minutes)
 // to check 1 person every 6 mins, max 16 calls per hour (assuming 3 games per hour max)
 
 init();
-let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
-let account_ids = await getPlayersIdFromDb(players_tracking)
-console.log(account_ids)
+// let players_tracking = await getPlayersFromDb(process.env.CHANNEL_ID)
+// let account_ids = await getPlayersIdFromDb(players_tracking)
+// console.log(`players_tracking: ${account_ids}`)
 refresh_loop();
