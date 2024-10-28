@@ -15,12 +15,6 @@ function formatTime(seconds) {
   return formattedTime;
 }
 
-async function getHeroes() {
-  const response = await fetch('https://api.opendota.com/api/heroes');
-  const data = await response.json();
-  return data;
-}
-
 async function getLastMatch() {
   const response = await fetch(`https://api.opendota.com/api/players/${accountId}/matches?limit=1`);
   const data = await response.json();
@@ -61,8 +55,8 @@ async function refresh() {
       return;
     }
 
-    const heroes = await getHeroes();
-    const localized_name = heroes.find(hero => hero.id === hero_id)?.localized_name.toUpperCase();
+    const hero = await find_hero(hero_id)
+    const localized_name = hero.localized_name.toUpperCase()
 
     const match = await getMatch(matchId)
 
@@ -182,6 +176,14 @@ async function find_player(playerName) {
   }
 }
 
+async function find_hero(heroId) {
+  try {
+    const hero = await Hero.findOne({ id: heroId });
+    return hero;
+  } catch (error) {
+    console.error("Error finding player:", error);
+  }
+}
 
 // END OF FUNCTIONS
 
