@@ -1,5 +1,6 @@
 import Discord from "discord.js";
 import fetch from 'node-fetch';
+import keepAlive from "./server.js";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDB from "./config/database.js";
