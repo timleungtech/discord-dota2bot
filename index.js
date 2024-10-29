@@ -298,12 +298,12 @@ client.on('messageCreate', async (msg) => {
   if (msg.content.startsWith("$untrack")) {
     let typed_player = msg.content.split("$untrack ")[1]
     let found_player = await find_player(typed_player)
-    if (players_tracking.includes(found_player.name)){
+    if (!found_player) {
+      msg.channel.send('Player not found.')
+    } else if (players_tracking.includes(found_player.name)){
       let index = players_tracking.indexOf(found_player.name)
       players_tracking = players_tracking.slice(0, index).concat(players_tracking.slice(index + 1))
       await removePlayerFromArrayByName(found_player.name)
-    } else {
-      msg.channel.send('Player not found.')
     }
     if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
     else msg.channel.send('No players being tracked.')
