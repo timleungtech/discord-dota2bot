@@ -29,7 +29,7 @@ async function getMatch(matchId) {
 
 // Main function to initialize both MongoDB and Discord client
 async function init() {
-  // keepAlive()
+  keepAlive()
   dotenv.config({ path: "./config/config.env" })
   await connectDB(); // Connect to MongoDB
   client.login(process.env.DISCORD_TOKEN); // Log in to Discord
