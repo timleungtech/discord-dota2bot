@@ -134,11 +134,22 @@ async function addPlayerToArray(player) {
   }
 }
 
-async function removePlayerFromArray() {
+async function removeFirstPlayerFromArray() {
   try {
     await Server.updateOne(
       { channel_id: process.env.CHANNEL_ID }, 
       { $pop: { players_tracking: -1 } }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function removePlayerFromArrayByName(player) {
+  try {
+    await Server.updateOne(
+      { channel_id: process.env.CHANNEL_ID }, 
+      { $pull: { players_tracking: player } }
     );
   } catch (err) {
     console.error(err);
@@ -266,16 +277,33 @@ client.on('messageCreate', async (msg) => {
   if (msg.content.startsWith("$track")) {
     let typed_player = msg.content.split("$track ")[1]
     let found_player = await find_player(typed_player)
-    if (found_player){ // && channel_id === channel_id)
+    if (!found_player) {
+      msg.channel.send('Player not found.')
+    } else if (players_tracking.includes(found_player.name)) {
+      msg.channel.send('Player already being tracked.')
+    } else if (found_player.name == typed_player){ // && channel_id === channel_id)
       players_tracking.push(found_player.name)
       await addPlayerToArray(found_player.name)
-    } else {
-      msg.channel.send('Player not found.')
+      await refresh(found_player.account_id)
     }
     // if more than 'max_players_tracked' players, remove earliest
     while (players_tracking.length > max_players_tracked){
       players_tracking.shift()
-      removePlayerFromArray()
+      removeFirstPlayerFromArray()
+    }
+    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
+    else msg.channel.send('No players being tracked.')
+  }
+
+  if (msg.content.startsWith("$untrack")) {
+    let typed_player = msg.content.split("$untrack ")[1]
+    let found_player = await find_player(typed_player)
+    if (players_tracking.includes(found_player.name)){
+      let index = players_tracking.indexOf(found_player.name)
+      players_tracking = players_tracking.slice(0, index).concat(players_tracking.slice(index + 1))
+      await removePlayerFromArrayByName(found_player.name)
+    } else {
+      msg.channel.send('Player not found.')
     }
     if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
     else msg.channel.send('No players being tracked.')
