@@ -185,10 +185,10 @@ async function getPlayersFromDb(channelId) {
   }
 }
 
-async function listPlayerNamesInDb() {
+async function listPlayersInDb() {
   try {
-    const players = await Player.find({}, 'name'); // Fetch only the 'name' field
-    const playerNames = players.map(player => player.name).sort(); // Extract names into an array
+    const players = await Player.find({}); // Fetch all properties of players
+    const playerNames = players.map(player => player); // Extract names into an array
     return playerNames;
   } catch (error) {
     console.error('Error fetching player names:', error);
@@ -311,9 +311,11 @@ client.on('messageCreate', async (msg) => {
 
   if (msg.content === "$list") {
     if (players_tracking.length > 0) {
-      let allPlayers = await listPlayerNamesInDb()
-      msg.channel.send(`Available players: ${allPlayers}`)
-      msg.channel.send(`Now tracking (max ${max_players_tracked}): ${players_tracking}`)
+      let allPlayers = await listPlayersInDb()
+      let players = allPlayers.map(x => [x.name]).sort()
+      msg.channel.send(`Available players:
+\`\`\`${JSON.stringify(players)}\`\`\``)
+      msg.channel.send(`\`\`\`Now tracking (max ${max_players_tracked}): ${JSON.stringify(players_tracking)}\`\`\``)
     }
     else msg.channel.send('No players being tracked.')
   }
