@@ -13,28 +13,31 @@ Discord dota2bot checks OpenDota API for new recent matches of USERS every 'n' m
 ## Commands
 * $list
 * $track <ref_name>
+* $untrack <ref_name>
 * $insert <ref_name> <account_id>
 
-## Room for improvement
-* disallow commands affecting other servers with dota2bot
-* allow channel switching
-
+## Database models
 ```
 /dota2bot database
 └── servers
     └── document
         ├── server_id : 'server_id'
         ├── channel_id : 'channel_id'
-        ├── players_tracking : []
+        └── players_tracking : []
 └── players
     └── document
         ├── account_id : account_id
         ├── name : 'name'
-        └── match_id : match_id
+        ├── match_id : match_id
+        └── servers : []
 └── heroes
     └── document
         ├── hero_id : hero_id
-        ├── localized_name : 'localized_name'
+        └── localized_name : 'localized_name'
 ```
+
+## Room for improvement
+* disallow commands affecting other servers with dota2bot
+* fix scope to separate access of players between multiple servers
 
 ![preview](https://raw.githubusercontent.com/timleungtech/discord-dota2bot/main/example.png)
