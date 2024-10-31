@@ -305,8 +305,9 @@ client.on('messageCreate', async (msg) => {
       players_tracking = players_tracking.slice(0, index).concat(players_tracking.slice(index + 1))
       await removePlayerFromArrayByName(found_player.name)
     }
-    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
-    else msg.channel.send('No players being tracked.')
+    if (players_tracking.length > 0) {
+      msg.channel.send(`\`\`\`Now tracking (max ${max_players_tracked}): ${JSON.stringify(players_tracking)}\`\`\``)
+    } else msg.channel.send('No players being tracked.')
   }
 
   if (msg.content === "$list") {
