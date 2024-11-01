@@ -291,8 +291,9 @@ client.on('messageCreate', async (msg) => {
       players_tracking.shift()
       removeFirstPlayerFromArray()
     }
-    if (players_tracking.length > 0) msg.channel.send(`Now tracking ${players_tracking}`)
-    else msg.channel.send('No players being tracked.')
+    if (players_tracking.length > 0) {
+      msg.channel.send(`\`\`\`Now tracking (max ${max_players_tracked}): ${JSON.stringify(players_tracking)}\`\`\``)
+    } else msg.channel.send('No players being tracked.')
   }
 
   if (msg.content.startsWith("$untrack")) {
@@ -317,8 +318,7 @@ client.on('messageCreate', async (msg) => {
       msg.channel.send(`Available players:
 \`\`\`${JSON.stringify(players)}\`\`\``)
       msg.channel.send(`\`\`\`Now tracking (max ${max_players_tracked}): ${JSON.stringify(players_tracking)}\`\`\``)
-    }
-    else msg.channel.send('No players being tracked.')
+    } else msg.channel.send('No players being tracked.')
   }
 });
 
