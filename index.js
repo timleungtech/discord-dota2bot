@@ -32,7 +32,12 @@ async function init() {
   keepAlive()
   dotenv.config({ path: "./config/config.env" })
   await connectDB(); // Connect to MongoDB
-  client.login(process.env.DISCORD_TOKEN); // Log in to Discord
+  try {
+    await client.login(process.env.DISCORD_TOKEN); // Log in to Discord
+    console.log("Discord client logged in successfully");
+  } catch (err) {
+    console.error("Discord client login failed:", err);
+  }
 }
 
 async function refresh(account_id) {
