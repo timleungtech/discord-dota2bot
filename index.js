@@ -16,7 +16,7 @@ function formatTime(seconds) {
 }
 
 async function getLastMatch(id) {
-  const response = await fetch(`https://api.opendota.com/api/players/${id}/matches?limit=1`);
+  const response = await fetch(`https://api.opendota.com/api/players/${id}/matches?limit=1&significant=0`);
   const data = await response.json();
   return data[0];
 }
